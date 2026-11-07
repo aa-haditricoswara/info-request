@@ -1,0 +1,591 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Request Lagu - Hadi Overlay</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.stage {
+  position: absolute;
+  left: 50%;
+  bottom: 8%;
+  width: min(94vw, 1120px);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.banner {
+  --panel: linear-gradient(105deg, #10151d 0%, #202936 58%, #111820 100%);
+  --side: linear-gradient(150deg, #c91927, #8f101a);
+  --edge: linear-gradient(180deg, #ff3d3d, #a90916);
+  --accent: #ffcf55;
+  --accent2: #ffd15c;
+  --dot: #ff414b;
+  --shine: rgba(255,215,100,.55);
+
+  position: relative;
+  display: grid;
+  grid-template-columns: 10px 32% 1fr;
+  grid-template-rows: 34px auto;
+  align-items: stretch;
+  min-height: 132px;
+  color: #fff;
+  background: var(--panel);
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 9px;
+  overflow: hidden;
+  box-shadow: 0 12px 35px rgba(0,0,0,.38);
+  animation: colorCycle 12s infinite;
+}
+
+/* GARIS SAMPING */
+
+.red-edge {
+  grid-column: 1;
+  grid-row: 1 / 3;
+  background: var(--edge);
+  box-shadow: 2px 0 14px var(--shine);
+  z-index: 2;
+}
+
+/* RUNNING TEXT */
+
+.follow-bar {
+  grid-column: 2 / 4;
+  grid-row: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  background: rgba(0,0,0,.22);
+  border-bottom: 1px solid rgba(255,255,255,.14);
+  padding: 0 14px;
+}
+
+.follow-label {
+  position: absolute;
+  left: 14px;
+  z-index: 2;
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: .16em;
+  white-space: nowrap;
+  text-shadow: 0 1px 4px #000;
+}
+
+.marquee-window {
+  width: 100%;
+  overflow: hidden;
+  margin-left: 125px;
+  white-space: nowrap;
+}
+
+.marquee-track {
+  display: inline-flex;
+  width: max-content;
+  align-items: center;
+  animation: marquee 15s linear infinite;
+}
+
+.marquee-text {
+  padding-right: 65px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .16em;
+  text-shadow: 0 1px 4px #000;
+}
+
+.marquee-text span {
+  color: var(--accent2);
+}
+
+/* PANEL KIRI */
+
+.side-left {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 18px;
+  background: var(--side);
+  border-right: 1px solid rgba(255,255,255,.16);
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+.side-left::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 25%,
+    rgba(255,255,255,.13) 48%,
+    transparent 68%
+  );
+  transform: translateX(-130%);
+  animation: sheen 7s infinite;
+}
+
+.left-title {
+  position: relative;
+  font-size: clamp(23px, 3vw, 35px);
+  line-height: 1.05;
+  font-weight: 950;
+  letter-spacing: .055em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 5px rgba(0,0,0,.5);
+}
+
+/* PANEL KANAN */
+
+.content {
+  grid-column: 3;
+  grid-row: 2;
+  padding: 12px 25px 15px;
+  min-width: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* JUDUL CARA REQUEST LAGU */
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 9px;
+  color: var(--accent);
+  font-size: clamp(15px, 1.65vw, 19px);
+  font-weight: 900;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
+
+/* TITIK LIVE */
+
+.live-dot {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--dot);
+  box-shadow: 0 0 10px var(--dot);
+  animation: pulse 1.2s infinite;
+}
+
+/* INSTRUKSI */
+
+.instruction {
+  color: #e9edf2;
+  font-size: clamp(19px, 2.3vw, 27px);
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: .015em;
+}
+
+.instruction strong {
+  color: var(--accent2);
+  font-weight: 900;
+}
+
+/* CONTOH */
+
+.example {
+  margin-top: 8px;
+  color: rgba(255,255,255,.85);
+  font-size: clamp(15px, 1.6vw, 19px);
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+
+/* GARIS BAWAH */
+
+.bottom-line {
+  position: absolute;
+  left: 10px;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--accent) 0%,
+    var(--accent) 28%,
+    rgba(255,255,255,.08) 28%
+  );
+  opacity: .95;
+}
+
+/* =================================
+   SAPUAN CAHAYA LEMBUT BERLAPIS
+   ================================= */
+
+.light-sweep {
+  position: absolute;
+  top: -80%;
+  bottom: -80%;
+
+  left: -45%;
+  width: 27%;
+  height: 260%;
+
+  z-index: 5;
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255,255,255,.015) 12%,
+      rgba(255,255,255,.08) 28%,
+      rgba(255,255,255,.24) 43%,
+      rgba(255,255,255,.48) 50%,
+      rgba(255,255,255,.24) 57%,
+      rgba(255,255,255,.08) 72%,
+      rgba(255,255,255,.015) 88%,
+      transparent 100%
+    );
+
+  filter: blur(13px);
+  opacity: 0;
+
+  transform: translateX(-180%) skewX(-18deg);
+  mix-blend-mode: screen;
+
+  animation: softSweep 6.4s linear infinite;
+}
+
+/* CAHAYA KEDUA */
+
+.light-sweep.two {
+  width: 23%;
+  filter: blur(17px);
+  opacity: 0;
+  animation-delay: -1.6s;
+  animation-duration: 6.4s;
+}
+
+/* CAHAYA KETIGA */
+
+.light-sweep.three {
+  width: 30%;
+  filter: blur(20px);
+  opacity: 0;
+  animation-delay: -3.2s;
+  animation-duration: 6.4s;
+}
+
+/* CAHAYA KEEMPAT */
+
+.light-sweep.four {
+  width: 20%;
+  filter: blur(14px);
+  opacity: 0;
+  animation-delay: -4.8s;
+  animation-duration: 6.4s;
+}
+
+/* GERAKAN CAHAYA TERUS MENGALIR */
+
+@keyframes softSweep {
+  0% {
+    transform: translateX(-180%) skewX(-18deg);
+    opacity: 0;
+  }
+
+  8% {
+    opacity: .48;
+  }
+
+  45% {
+    opacity: .62;
+  }
+
+  88% {
+    opacity: .42;
+  }
+
+  100% {
+    transform: translateX(650%) skewX(-18deg);
+    opacity: 0;
+  }
+}
+
+/* GLOW LEMBUT DI BELAKANG CAHAYA */
+
+.light-glow {
+  position: absolute;
+  top: -100%;
+  bottom: -100%;
+  left: -45%;
+  width: 42%;
+
+  z-index: 4;
+  pointer-events: none;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,.025),
+    var(--shine),
+    rgba(255,255,255,.12),
+    transparent
+  );
+
+  filter: blur(24px);
+  opacity: 0;
+
+  transform: translateX(-180%) skewX(-18deg);
+  mix-blend-mode: screen;
+
+  animation: glowSweep 8s linear infinite;
+}
+
+.light-glow.two {
+  animation-delay: -4s;
+  width: 35%;
+  filter: blur(28px);
+}
+
+@keyframes glowSweep {
+  0% {
+    transform: translateX(-180%) skewX(-18deg);
+    opacity: 0;
+  }
+
+  12% {
+    opacity: .45;
+  }
+
+  85% {
+    opacity: .4;
+  }
+
+  100% {
+    transform: translateX(500%) skewX(-18deg);
+    opacity: 0;
+  }
+}
+
+/* SIKLUS WARNA: 4 WARNA */
+
+@keyframes colorCycle {
+  0%, 24.99% {
+    --panel: linear-gradient(105deg,#10151d 0%,#202936 58%,#111820 100%);
+    --side: linear-gradient(150deg,#c91927,#8f101a);
+    --edge: linear-gradient(180deg,#ff3d3d,#a90916);
+    --accent: #ffcf55;
+    --accent2: #ffd15c;
+    --dot: #ff414b;
+    --shine: rgba(255,215,100,.55);
+  }
+
+  25%, 49.99% {
+    --panel: linear-gradient(105deg,#09182d 0%,#183b65 58%,#0b1b30 100%);
+    --side: linear-gradient(150deg,#176bd1,#103b83);
+    --edge: linear-gradient(180deg,#36a9ff,#0751b5);
+    --accent: #7bd5ff;
+    --accent2: #9bdfff;
+    --dot: #39baff;
+    --shine: rgba(80,180,255,.65);
+  }
+
+  50%, 74.99% {
+    --panel: linear-gradient(105deg,#080808 0%,#292216 38%,#806020 72%,#090909 100%);
+    --side: linear-gradient(150deg,#d6ad45 0%,#76551b 48%,#17120a 100%);
+    --edge: linear-gradient(180deg,#ffe49a 0%,#b88624 55%,#090909 100%);
+    --accent: #f5d98a;
+    --accent2: #ffdf91;
+    --dot: #eac45c;
+    --shine: rgba(255,211,112,.75);
+  }
+
+  75%, 99.99% {
+    --panel: linear-gradient(105deg,#071d1b 0%,#124b46 48%,#092824 100%);
+    --side: linear-gradient(150deg,#19b5a0 0%,#08766c 55%,#06443f 100%);
+    --edge: linear-gradient(180deg,#65ffe0 0%,#0ca894 55%,#07584f 100%);
+    --accent: #8affdf;
+    --accent2: #aaffeb;
+    --dot: #45f5d0;
+    --shine: rgba(75,255,220,.75);
+  }
+}
+
+/* ANIMASI RUNNING TEXT */
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes pulse {
+  0%,100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: .38;
+  }
+}
+
+@keyframes sheen {
+  0%,12% {
+    transform: translateX(-130%);
+  }
+
+  34%,100% {
+    transform: translateX(130%);
+  }
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 640px) {
+  .banner {
+    grid-template-columns: 7px 30% 1fr;
+    grid-template-rows: 30px auto;
+    min-height: 112px;
+  }
+
+  .side-left {
+    padding: 8px 5px;
+  }
+
+  .left-title {
+    font-size: clamp(15px, 3.5vw, 22px);
+  }
+
+  .content {
+    padding: 10px 13px;
+  }
+
+  .eyebrow {
+    font-size: clamp(12px, 2.5vw, 16px);
+    gap: 8px;
+    margin-bottom: 7px;
+  }
+
+  .live-dot {
+    width: 8px;
+    height: 8px;
+  }
+
+  .instruction {
+    font-size: clamp(15px, 3vw, 20px);
+  }
+
+  .example {
+    font-size: clamp(12px, 2.2vw, 16px);
+  }
+
+  .follow-bar {
+    padding: 0 9px;
+  }
+
+  .follow-label {
+    left: 9px;
+    font-size: 9px;
+  }
+
+  .marquee-window {
+    margin-left: 105px;
+  }
+
+  .marquee-text {
+    font-size: 11px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="stage">
+
+  <section class="banner" aria-label="Informasi request lagu">
+
+    <div class="red-edge"></div>
+
+    <!-- SAPUAN CAHAYA BERIRINGAN -->
+    <div class="light-glow"></div>
+    <div class="light-glow two"></div>
+
+    <div class="light-sweep one"></div>
+    <div class="light-sweep two"></div>
+    <div class="light-sweep three"></div>
+    <div class="light-sweep four"></div>
+
+    <!-- RUNNING TEXT DI ATAS -->
+    <div class="follow-bar">
+      <div class="follow-label">SUPPORT LIVE</div>
+
+      <div class="marquee-window">
+        <div class="marquee-track">
+          <div class="marquee-text">
+            FOLLOW <span>DOUBLE ARUL</span> • FOLLOW <span>DOUBLE ARUL</span> • FOLLOW <span>DOUBLE ARUL</span> • FOLLOW <span>DOUBLE ARUL</span> •
+          </div>
+          <div class="marquee-text">
+            FOLLOW <span>DOUBLE ARUL</span> • FOLLOW <span>DOUBLE ARUL</span> • FOLLOW <span>DOUBLE ARUL</span> • FOLLOW <span>DOUBLE ARUL</span> •
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REQUEST LAGU -->
+    <div class="side-left">
+      <div class="left-title">REQUEST<br>LAGU</div>
+    </div>
+
+    <!-- INFORMASI REQUEST -->
+    <div class="content">
+
+      <div class="eyebrow">
+        <span class="live-dot"></span>
+        CARA REQUEST LAGU
+      </div>
+
+      <div class="instruction">
+        Ketik <strong>!play Judul Lagu - Nama Artis</strong>
+      </div>
+
+      <div class="example">
+        Contoh: !play Gantung - Melly Goeslaw
+      </div>
+
+    </div>
+
+    <div class="bottom-line"></div>
+
+  </section>
+
+</div>
+
+</body>
+</html>
